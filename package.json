@@ -1,0 +1,20 @@
+{
+  "name": "movies-api",
+  "version": "1.0.0",
+  "description": "Repositorio para almacenar mi trabajo del Curso Práctico de Consumo de API REST con JavaScript ✌️",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Avipez/Movies-Api.git"
+  },
+  "keywords": [],
+  "author": "David <dg_lf@hotmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Avipez/Movies-Api/issues"
+  },
+  "homepage": "https://github.com/Avipez/Movies-Api#readme"
+}
