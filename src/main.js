@@ -121,4 +121,5 @@ async function getRelatedMovies(id) {
   const relatedMovies = data.results;
 
   fillMoviesInfo(relatedMovies, relatedMoviesContainer);
-}API_KEY=12d940248e2b863a48f411540da51a9a
+}
+//holis funciona ya pofabo
