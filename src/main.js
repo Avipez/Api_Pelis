@@ -122,3 +122,4 @@ async function getRelatedMovies(id) {
 
   fillMoviesInfo(relatedMovies, relatedMoviesContainer);
 }
+//
