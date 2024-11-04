@@ -4,13 +4,22 @@ const api = axios.create({
       'Content-Type': 'application/json;charset=utf-8',
     },
     params: {
-      'api_key': process.env.API_KEY,
+      'api_key': API_KEY,
     },
 });
 
 //Utils
 
-function fillMoviesInfo(movies, node ) {
+const lazyLoader = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      const url = entry.target.getAttribute("data-img")
+      entry.target.setAttribute("src", url)
+    }
+  })
+})
+
+function fillMoviesInfo(movies, node, lazyLoad = false) {
   node.innerHTML = "";
   movies.forEach( movie => {
   
@@ -23,8 +32,15 @@ function fillMoviesInfo(movies, node ) {
     const movieImg = document.createElement("img");
     movieImg.classList.add("movie-img");
     movieImg.setAttribute("alt", movie.title);
-    movieImg.setAttribute("src", `https://image.tmdb.org/t/p/w300/${movie.poster_path}`);
-  
+    movieImg.setAttribute(
+      lazyLoad ? "data-img": "src",
+      `https://image.tmdb.org/t/p/w300/${movie.poster_path}`
+    );
+
+    if (lazyLoad) {
+      lazyLoader.observe(movieImg);
+    }
+
     movieSlide.appendChild(movieImg);
     node.appendChild(movieSlide);
 
@@ -59,7 +75,7 @@ async function getTrendingMoviesPreview() {
     const { data } = await api('trending/movie/day');
     const movies = data.results;
 
-    fillMoviesInfo(movies, trendingMoviesPreviewList);
+    fillMoviesInfo(movies, trendingMoviesPreviewList ,true);
 };
 
 
@@ -80,7 +96,7 @@ async function getMoviesByCategory(id) {
   const movies = data.results;
   trendingPreviewSection.scrollTop;
 
-  fillMoviesInfo(movies, genericSection)
+  fillMoviesInfo(movies, genericSection, true)
   
 };
 
@@ -94,14 +110,14 @@ async function getMoviesBySearch(query) {
   const movies = data.results;
   trendingPreviewSection.scrollTop;
 
-  fillMoviesInfo(movies, genericSection)
+  fillMoviesInfo(movies, genericSection, true)
   
 };
 
 async function getTrendingMovies() {
   const { data } = await api('trending/movie/day');
   const movies = data.results;
-  fillMoviesInfo(movies, genericSection);
+  fillMoviesInfo(movies, genericSection, true);
 };
 
 async function getMovieInfo(id) {
@@ -120,6 +136,6 @@ async function getRelatedMovies(id) {
   const { data } = await api(`movie/${id}/recommendations`);
   const relatedMovies = data.results;
 
-  fillMoviesInfo(relatedMovies, relatedMoviesContainer);
+  fillMoviesInfo(relatedMovies, relatedMoviesContainer, true);
 }
 //
