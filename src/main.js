@@ -4,14 +4,47 @@ const api = axios.create({
       'Content-Type': 'application/json;charset=utf-8',
     },
     params: {
-      'api_key': process.env.API_KEY,
+      'api_key': API_KEY,
     },
 });
 
 //Utils
 
-function fillMoviesInfo(movies, node ) {
-  node.innerHTML = "";
+function morePagesButton() {
+  let i = 1
+  if (i =>2 ) {
+    const oldBtn = document.querySelector(".oldBtn");
+    console.log(oldBtn);
+    genericSection.removeChild(oldBtn)
+  }
+  const loadMoreBtn = document.createElement("button");
+  loadMoreBtn.classList.add("oldBtn")
+  loadMoreBtn.innerText = "Cargar mas";
+  loadMoreBtn.addEventListener("click", moreMoviePages);
+  genericSection.appendChild(loadMoreBtn);
+  i++
+}
+
+const lazyLoader = new IntersectionObserver((entries) => {
+  entries.forEach((entry) => {
+    if (entry.isIntersecting) {
+      const url = entry.target.getAttribute("data-img")
+      entry.target.setAttribute("src", url)
+    }
+  })
+})
+
+function fillMoviesInfo(
+  movies,
+  node,
+  {
+    lazyLoad = false,
+    clean = true
+  } = {}
+  ) {
+  if (clean) {
+    node.innerHTML = "";
+  }
   movies.forEach( movie => {
   
     const movieSlide = document.createElement("div");
@@ -23,8 +56,18 @@ function fillMoviesInfo(movies, node ) {
     const movieImg = document.createElement("img");
     movieImg.classList.add("movie-img");
     movieImg.setAttribute("alt", movie.title);
-    movieImg.setAttribute("src", `https://image.tmdb.org/t/p/w300/${movie.poster_path}`);
-  
+    movieImg.setAttribute(
+      lazyLoad ? "data-img": "src",
+      `https://image.tmdb.org/t/p/w300/${movie.poster_path}`
+    );
+    movieImg.addEventListener("error", () => {
+      movieImg.setAttribute("src", "https://critics.io/img/movies/poster-placeholder.png")
+    })
+
+    if (lazyLoad) {
+      lazyLoader.observe(movieImg);
+    }
+
     movieSlide.appendChild(movieImg);
     node.appendChild(movieSlide);
 
@@ -55,11 +98,15 @@ function fillCategoryInfo(categories, container) {
 
 // API Calls
 
+
 async function getTrendingMoviesPreview() {
     const { data } = await api('trending/movie/day');
     const movies = data.results;
 
-    fillMoviesInfo(movies, trendingMoviesPreviewList);
+    fillMoviesInfo(movies, trendingMoviesPreviewList , {
+      lazyLoad: true,
+      clean: true
+    });
 };
 
 
@@ -80,7 +127,10 @@ async function getMoviesByCategory(id) {
   const movies = data.results;
   trendingPreviewSection.scrollTop;
 
-  fillMoviesInfo(movies, genericSection)
+  fillMoviesInfo(movies, genericSection, {
+    lazyLoad: true,
+    clean: false
+  })
   
 };
 
@@ -94,15 +144,54 @@ async function getMoviesBySearch(query) {
   const movies = data.results;
   trendingPreviewSection.scrollTop;
 
-  fillMoviesInfo(movies, genericSection)
+  fillMoviesInfo(movies, genericSection, {
+    lazyLoad: true,
+    clean: false
+  })
   
 };
 
 async function getTrendingMovies() {
   const { data } = await api('trending/movie/day');
   const movies = data.results;
-  fillMoviesInfo(movies, genericSection);
+  fillMoviesInfo(movies, genericSection,
+    {
+    lazyLoader: true,
+    clean: true
+    }
+  );
+  morePagesButton();
 };
+
+async function moreMoviePages() {
+  const { 
+      scrollTop,
+      scrollHeight,
+      clientHeight
+  } = document.documentElement;
+  
+  const scrollIsBottom = scrollTop + clientHeight >= scrollHeight - 15;
+
+  if (scrollIsBottom){
+    page++;
+    const { data } = await api('trending/movie/day', {
+      params: {
+        page: page
+      }
+    });
+    const movies = data.results;
+
+    fillMoviesInfo(
+      movies,
+     genericSection,
+    {
+      lazyLoader: true,
+      clean: false
+    });
+  }
+
+  /* morePagesButton(); */
+}
 
 async function getMovieInfo(id) {
   const { data: movie } = await api(`movie/${id}`);
@@ -120,6 +209,9 @@ async function getRelatedMovies(id) {
   const { data } = await api(`movie/${id}/recommendations`);
   const relatedMovies = data.results;
 
-  fillMoviesInfo(relatedMovies, relatedMoviesContainer);
+  fillMoviesInfo(relatedMovies, relatedMoviesContainer, {
+    lazyLoad: true,
+    clean: false
+  });
 }
 //
