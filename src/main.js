@@ -125,7 +125,8 @@ async function getMoviesByCategory(id) {
     }
   });
   const movies = data.results;
-  trendingPreviewSection.scrollTop;
+  
+  maxPage = data.total_pages;
 
   fillMoviesInfo(movies, genericSection, {
     lazyLoad: true,
@@ -133,6 +134,39 @@ async function getMoviesByCategory(id) {
   })
   
 };
+
+function categoryPageInifniteScrolling(id) {
+  return async function () {
+    const { 
+        scrollTop,
+        scrollHeight,
+        clientHeight
+    } = document.documentElement;
+    
+    const scrollIsBottom = scrollTop + clientHeight >= scrollHeight - 15;
+    const pageIsNotMax = page < maxPage;
+  
+    if (scrollIsBottom && pageIsNotMax){
+      page++;
+      const { data } = await api('discover/movie', {
+        params: {
+          with_genres: id,
+          page,
+        }
+      });
+      const movies = data.results;
+      /* trendingPreviewSection.scrollTop; */
+    
+      fillMoviesInfo(movies, genericSection, {
+        lazyLoad: true,
+        clean: false
+      })
+    }
+  
+    /* morePagesButton(); */
+
+  }
+}
 
 
 async function getMoviesBySearch(query) {
@@ -142,8 +176,9 @@ async function getMoviesBySearch(query) {
     }
   });
   const movies = data.results;
-  trendingPreviewSection.scrollTop;
-
+  
+  maxPage = data.total_pages;
+  
   fillMoviesInfo(movies, genericSection, {
     lazyLoad: true,
     clean: false
@@ -151,9 +186,43 @@ async function getMoviesBySearch(query) {
   
 };
 
+ function movieSearchInifiniteScrolling(query) {
+  return async function () {
+    const { 
+        scrollTop,
+        scrollHeight,
+        clientHeight
+    } = document.documentElement;
+    
+    const scrollIsBottom = scrollTop + clientHeight >= scrollHeight - 15;
+    const pageIsNotMax = page < maxPage;
+  
+    if (scrollIsBottom && pageIsNotMax){
+      page++;
+      const { data } = await api('search/movie', {
+        params: {
+          query,
+          page,
+        }
+      });
+      const movies = data.results;
+      /* trendingPreviewSection.scrollTop; */
+    
+      fillMoviesInfo(movies, genericSection, {
+        lazyLoad: true,
+        clean: false
+      })
+    }
+  
+    /* morePagesButton(); */
+
+  }
+}
+
 async function getTrendingMovies() {
   const { data } = await api('trending/movie/day');
   const movies = data.results;
+  maxPage = data.total_pages;
   fillMoviesInfo(movies, genericSection,
     {
     lazyLoader: true,
@@ -171,8 +240,9 @@ async function moreMoviePages() {
   } = document.documentElement;
   
   const scrollIsBottom = scrollTop + clientHeight >= scrollHeight - 15;
+  const pageIsNotMax = page < maxPage;
 
-  if (scrollIsBottom){
+  if (scrollIsBottom && pageIsNotMax){
     page++;
     const { data } = await api('trending/movie/day', {
       params: {
