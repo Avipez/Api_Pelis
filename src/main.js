@@ -48,9 +48,7 @@ function fillMoviesInfo(
   movies.forEach( movie => {
   
     const movieSlide = document.createElement("div");
-    movieSlide.addEventListener("click", () => {
-      location.hash = `#movie=${movie.id}`
-    });
+    
     movieSlide.classList.add("movie-container");
   
     const movieImg = document.createElement("img");
@@ -60,15 +58,27 @@ function fillMoviesInfo(
       lazyLoad ? "data-img": "src",
       `https://image.tmdb.org/t/p/w300/${movie.poster_path}`
     );
+    movieImg.addEventListener("click", () => {
+      location.hash = `#movie=${movie.id}`
+    });
     movieImg.addEventListener("error", () => {
       movieImg.setAttribute("src", "https://critics.io/img/movies/poster-placeholder.png")
-    })
+    });
+
+    const movieBtn = document.createElement("button");
+    movieBtn.classList.add("movie-btn");
+    movieBtn.addEventListener("click", () => {
+      movieBtn.classList.toggle("movie-btn--liked");
+      /* addToFavorites, */
+      //agregar a local storage
+    });
 
     if (lazyLoad) {
       lazyLoader.observe(movieImg);
     }
 
     movieSlide.appendChild(movieImg);
+    movieSlide.appendChild(movieBtn);
     node.appendChild(movieSlide);
 
   });
