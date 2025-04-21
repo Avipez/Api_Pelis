@@ -1,3 +1,4 @@
+// Data
 const api = axios.create({
     baseURL: 'https://api.themoviedb.org/3/',
     headers: {
@@ -7,6 +8,32 @@ const api = axios.create({
       'api_key': API_KEY,
     },
 });
+
+function favoriteMovieList() {
+  const item = JSON.parse(localStorage.getItem("liked_movies"));
+  let movies;
+
+  if (item) {
+    movies = item;
+  } else {
+    movies = {};
+  }
+  return movies
+}
+
+function likedMovie(movie) {
+  const likedMovies = favoriteMovieList();
+  console.log(likedMovies);
+  if (likedMovies[movie.id]) {
+    likedMovies[movie.id] = undefined;
+  } else { 
+    likedMovies[movie.id] = movie;
+  }
+
+  localStorage.setItem("liked_movies", JSON.stringify(likedMovies));
+  getFavoriteMovies()
+
+};
 
 //Utils
 
@@ -34,14 +61,7 @@ const lazyLoader = new IntersectionObserver((entries) => {
   })
 })
 
-function fillMoviesInfo(
-  movies,
-  node,
-  {
-    lazyLoad = false,
-    clean = true
-  } = {}
-  ) {
+function fillMoviesInfo( movies, node, { lazyLoad = false, clean = true } = {} ) {
   if (clean) {
     node.innerHTML = "";
   }
@@ -64,13 +84,13 @@ function fillMoviesInfo(
     movieImg.addEventListener("error", () => {
       movieImg.setAttribute("src", "https://critics.io/img/movies/poster-placeholder.png")
     });
-
     const movieBtn = document.createElement("button");
     movieBtn.classList.add("movie-btn");
+    favoriteMovieList()[movie.id] && movieBtn.classList.add("movie-btn--liked");
+    
     movieBtn.addEventListener("click", () => {
       movieBtn.classList.toggle("movie-btn--liked");
-      /* addToFavorites, */
-      //agregar a local storage
+      likedMovie(movie);
     });
 
     if (lazyLoad) {
@@ -294,4 +314,12 @@ async function getRelatedMovies(id) {
     clean: false
   });
 }
-//
+
+function getFavoriteMovies() {
+  const likedMovies = favoriteMovieList();
+  const moviesArray = Object.values(likedMovies);
+  console.log(moviesArray);
+
+  fillMoviesInfo(moviesArray, favoriteMoviesContainer, {lazyLoad: true, clean: true });
+
+};
